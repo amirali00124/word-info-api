@@ -1,38 +1,42 @@
 from flask import Flask, request, jsonify
-import os
+import requests
 
 app = Flask(__name__)
 
-words_data = {
-    "serendipity": {
-        "definition": "The occurrence of events by chance in a happy or beneficial way.",
-        "example": "A fortunate stroke of serendipity.",
-        "synonyms": ["fluke", "luck", "chance"]
-    },
-    "ephemeral": {
-        "definition": "Lasting for a very short time.",
-        "example": "Fame in the world of rock and pop is largely ephemeral.",
-        "synonyms": ["transitory", "short-lived", "temporary"]
-    },
-    "resilience": {
-        "definition": "The capacity to recover quickly from difficulties.",
-        "example": "Her resilience was apparent after the loss.",
-        "synonyms": ["toughness", "adaptability", "endurance"]
-    },
-    "eloquent": {
-        "definition": "Fluent or persuasive in speaking or writing.",
-        "example": "He gave an eloquent speech that moved the audience.",
-        "synonyms": ["articulate", "expressive", "persuasive"]
-    }
-}
-
-@app.route("/define", methods=["GET"])
+@app.route('/define')
 def define_word():
-    word = request.args.get("word", "").lower()
-    if word in words_data:
-        return jsonify({word: words_data[word]})
-    return jsonify({"error": "Word not found"}), 404
+    word = request.args.get('word')
+    if not word:
+        return jsonify({"error": "Please provide a word"}), 400
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        return jsonify({"error": "Word not found"}), 404
+
+    data = response.json()
+
+    try:
+        first = data[0]
+        meaning = first['meanings'][0]['definitions'][0]
+
+        definition = meaning.get('definition')
+        example = meaning.get('example', 'No example available')
+        synonyms = meaning.get('synonyms', [])
+
+        result = {
+            word: {
+                "definition": definition,
+                "example": example,
+                "synonyms": synonyms
+            }
+        }
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": "Unable to parse response"}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
