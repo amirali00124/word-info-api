@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import os
 
 app = Flask(__name__)
 
@@ -12,6 +13,16 @@ words_data = {
         "definition": "Lasting for a very short time.",
         "example": "Fame in the world of rock and pop is largely ephemeral.",
         "synonyms": ["transitory", "short-lived", "temporary"]
+    },
+    "resilience": {
+        "definition": "The capacity to recover quickly from difficulties.",
+        "example": "Her resilience was apparent after the loss.",
+        "synonyms": ["toughness", "adaptability", "endurance"]
+    },
+    "eloquent": {
+        "definition": "Fluent or persuasive in speaking or writing.",
+        "example": "He gave an eloquent speech that moved the audience.",
+        "synonyms": ["articulate", "expressive", "persuasive"]
     }
 }
 
@@ -23,4 +34,5 @@ def define_word():
     return jsonify({"error": "Word not found"}), 404
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
