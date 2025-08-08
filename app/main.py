@@ -24,7 +24,9 @@ def define_word():
 
         definition = meaning.get('definition')
         example = meaning.get('example', 'No example available')
-        synonyms = meaning.get('synonyms', [])
+        synonyms = meaning.get('synonyms')
+        if not synonyms:
+            synonyms = ["No synonyms available"]
 
         result = {
             word: {
